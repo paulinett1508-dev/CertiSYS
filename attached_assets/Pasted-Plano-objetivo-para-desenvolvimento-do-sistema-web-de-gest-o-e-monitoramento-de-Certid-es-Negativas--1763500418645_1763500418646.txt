@@ -1,0 +1,55 @@
+Plano objetivo para desenvolvimento do sistema web de gestão e monitoramento de Certidões Negativas:
+
+1. Definir arquitetura do projeto
+Front-end: React com biblioteca de UI moderna (Material-UI ou Tailwind CSS)
+Back-end/infraestrutura: Firebase (Firestore, Authentication, Functions, Hosting)
+Armazenamento de documentos: Firebase Storage
+
+2. Priorizar experiência do usuário (UX)
+Criar design simples, clean, e intuitivo
+Usar sidebar moderna para navegação rápida entre áreas (dashboard, certidões, notificações, relatórios)
+Interface responsiva para uso em desktop e mobile
+
+3. Implementar autenticação e controle de acesso
+Configurar Firebase Authentication para login seguro
+Definir regras no Firestore para permissões por perfil
+Desenvolver funcionalidades principais
+Cadastro e edição de certidões (tipo, cliente, validade, órgão emissor, documentos anexados)
+
+4. Dashboard central com status das certidões e alertas visuais
+Notificações automáticas via Firebase Functions (e-mail, push)
+Upload seguro e organização dos documentos no Storage
+Preparar para escalabilidade
+
+5. Estruturar Firestore com coleções e documentos de forma eficiente
+Utilizar Functions para lógica pesada e notificações
+Evitar sobrecarga de dados no front-end com paginação e filtros
+Testes e ajustes
+
+6. Testar funcionalidades e navegabilidade com usuários reais
+Ajustar fluxo para garantir usabilidade e performance
+Deploy e monitoramento
+Deploy usando Firebase Hosting
+
+Para a parte de usuários e perfis no sistema de gestão de Certidões Negativas, o plano deve incluir:
+1. Definição de perfis de usuários
+
+Administrador: controle total do sistema, pode gerenciar usuários, perfis, certidões e configurações.
+Contador/Usuário comum: acesso para inserir, editar e visualizar certidões relativas aos seus clientes.
+Visualizador/Leitura: perfil com acesso apenas para visualizar dados, sem permissão para editar.
+
+2. Implementação no Firebase Authentication
+Criar fluxo de registro e login com e-mail e senha.
+Associar cada usuário a um perfil/permiso no Firestore.
+
+3. Controle de acesso no banco de dados
+Configurar regras de segurança no Firestore para garantir que cada perfil acessa apenas os dados permitidos.
+Exemplo: usuários comuns só acessam certidões dos clientes deles; administrador acessa todos.
+
+4. Interface de gerenciamento de usuários
+Tela para administrador criar, editar e desativar usuários.
+Possibilidade de atribuir ou alterar perfis.
+Sessões e políticas de segurança
+
+5. Implementar expiração de sessão, autenticação multifator (se possível).
+Log de acessos e ações para auditoria.
