@@ -15,6 +15,7 @@ import Clients from "@/pages/clients";
 import ClientForm from "@/pages/client-form";
 import Notifications from "@/pages/notifications";
 import Users from "@/pages/users";
+import Reports from "@/pages/reports";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/clients/:id/edit" component={ClientForm} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/users" component={Users} />
+      <Route path="/reports" component={Reports} />
       <Route component={NotFound} />
     </Switch>
   );

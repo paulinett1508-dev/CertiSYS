@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Download, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Download, Eye, Edit, Trash2, FileDown, FileSpreadsheet } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { formatDate } from "@/lib/dateUtils";
-import type { CertificateWithRelations } from "@shared/schema";
+import type { CertificateWithRelations, Client } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -17,12 +15,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CertificateFilters } from "@/components/certificate-filters";
 
 export default function Certificates() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filters, setFilters] = useState<{
+    search?: string;
+    clientId?: string;
+    type?: string[];
+    status?: string[];
+    expiryFrom?: string;
+    expiryTo?: string;
+  }>({});
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -37,10 +42,95 @@ export default function Certificates() {
     }
   }, [user, authLoading, toast]);
 
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    if (filters.search) params.append("search", filters.search);
+    if (filters.clientId) params.append("clientId", filters.clientId);
+    if (filters.type) filters.type.forEach(t => params.append("type", t));
+    if (filters.status) filters.status.forEach(s => params.append("status", s));
+    if (filters.expiryFrom) params.append("expiryFrom", filters.expiryFrom);
+    if (filters.expiryTo) params.append("expiryTo", filters.expiryTo);
+    return params.toString();
+  };
+
   const { data: certificates, isLoading } = useQuery<CertificateWithRelations[]>({
-    queryKey: ["/api/certificates"],
+    queryKey: ["/api/certificates", filters],
+    queryFn: async () => {
+      const queryString = buildQueryString();
+      const url = queryString ? `/api/certificates?${queryString}` : "/api/certificates";
+      const response = await fetch(url, { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to fetch certificates");
+      return response.json();
+    },
     enabled: !!user,
   });
+
+  const { data: clients } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+    enabled: !!user,
+  });
+
+  const handleExportPDF = async () => {
+    try {
+      const queryString = buildQueryString();
+      const url = queryString ? `/api/reports/export/pdf?${queryString}` : "/api/reports/export/pdf";
+      const response = await fetch(url, { credentials: "include" });
+      
+      if (!response.ok) throw new Error("Falha ao gerar PDF");
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `certidoes-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      toast({
+        title: "PDF gerado com sucesso",
+        description: "O relatório foi baixado",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível gerar o relatório",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const queryString = buildQueryString();
+      const url = queryString ? `/api/reports/export/excel?${queryString}` : "/api/reports/export/excel";
+      const response = await fetch(url, { credentials: "include" });
+      
+      if (!response.ok) throw new Error("Falha ao gerar Excel");
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `certidoes-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      toast({
+        title: "Excel gerado com sucesso",
+        description: "O relatório foi baixado",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar Excel",
+        description: "Não foi possível gerar o relatório",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -51,76 +141,46 @@ export default function Certificates() {
     );
   }
 
-  const filteredCertificates = certificates?.filter((cert) => {
-    const matchesSearch =
-      cert.client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cert.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cert.issuingAuthority.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus = statusFilter === "all" || cert.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  }) || [];
-
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-semibold" data-testid="text-certificates-title">
           Certidões
         </h1>
-        <Button asChild data-testid="button-new-certificate">
-          <a href="/certificates/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Certidão
-          </a>
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleExportPDF} variant="outline" size="sm" data-testid="button-export-pdf">
+            <FileDown className="h-4 w-4 mr-2" />
+            PDF
+          </Button>
+          <Button onClick={handleExportExcel} variant="outline" size="sm" data-testid="button-export-excel">
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Excel
+          </Button>
+          <Button asChild data-testid="button-new-certificate">
+            <a href="/certificates/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Certidão
+            </a>
+          </Button>
+        </div>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por cliente, tipo ou órgão..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-                data-testid="input-search"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48" data-testid="select-status-filter">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="valid">Válidas</SelectItem>
-                <SelectItem value="expiring_soon">Vencendo em breve</SelectItem>
-                <SelectItem value="expired">Vencidas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <CertificateFilters
+        onFilter={setFilters}
+        clients={clients?.map(c => ({ id: c.id, name: c.name })) || []}
+      />
 
       <Card>
         <CardContent className="p-0">
-          {filteredCertificates.length === 0 ? (
+          {!certificates || certificates.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Nenhuma certidão encontrada</p>
-              {searchQuery || statusFilter !== "all" ? (
+              {Object.keys(filters).length > 0 ? (
                 <Button
                   variant="outline"
                   className="mt-4"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("all");
-                  }}
+                  onClick={() => setFilters({})}
                   data-testid="button-clear-filters"
                 >
                   Limpar filtros
@@ -146,7 +206,7 @@ export default function Certificates() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCertificates.map((cert) => (
+                  {certificates.map((cert) => (
                     <tr
                       key={cert.id}
                       className="border-b hover-elevate"

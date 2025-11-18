@@ -9,6 +9,7 @@ import {
 import { insertClientSchema, insertCertificateSchema, insertNotificationSchema } from "@shared/schema";
 import { getCertificateStatus } from "@shared/utils";
 import { createAuditLog } from "./audit";
+import { generatePDFReport, generateExcelReport } from "./reports";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -215,8 +216,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      const certificates = await storage.getAllCertificates(userId, user?.role);
-      res.json(certificates);
+      // Check if filters are provided
+      const { search, clientId, type, status, expiryFrom, expiryTo } = req.query;
+      
+      if (search || clientId || type || status || expiryFrom || expiryTo) {
+        // Use filter method if any filter is provided
+        const filters = {
+          search: search as string,
+          clientId: clientId as string,
+          type: type ? (Array.isArray(type) ? type as string[] : [type as string]) : undefined,
+          status: status ? (Array.isArray(status) ? status as string[] : [status as string]) : undefined,
+          expiryFrom: expiryFrom as string,
+          expiryTo: expiryTo as string,
+          userId,
+          userRole: user?.role,
+        };
+        const certificates = await storage.filterCertificates(filters);
+        res.json(certificates);
+      } else {
+        // No filters, use default method
+        const certificates = await storage.getAllCertificates(userId, user?.role);
+        res.json(certificates);
+      }
     } catch (error) {
       console.error("Error fetching certificates:", error);
       res.status(500).json({ message: "Failed to fetch certificates" });
@@ -343,6 +364,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting certificate:", error);
       res.status(500).json({ message: "Failed to delete certificate" });
+    }
+  });
+
+  // ========== Reports Routes ==========
+  app.get("/api/reports/statistics", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      const statistics = await storage.getCertificateStatistics(userId, user?.role);
+      res.json(statistics);
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  app.get("/api/reports/export/pdf", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Check if filters are provided
+      const { search, clientId, type, status, expiryFrom, expiryTo } = req.query;
+      
+      let certificates;
+      if (search || clientId || type || status || expiryFrom || expiryTo) {
+        const filters = {
+          search: search as string,
+          clientId: clientId as string,
+          type: type ? (Array.isArray(type) ? type as string[] : [type as string]) : undefined,
+          status: status ? (Array.isArray(status) ? status as string[] : [status as string]) : undefined,
+          expiryFrom: expiryFrom as string,
+          expiryTo: expiryTo as string,
+          userId,
+          userRole: user?.role,
+        };
+        certificates = await storage.filterCertificates(filters);
+      } else {
+        certificates = await storage.getAllCertificates(userId, user?.role);
+      }
+      
+      const pdfBuffer = generatePDFReport(certificates);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="relatorio-certidoes-${new Date().toISOString().split('T')[0]}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF report:", error);
+      res.status(500).json({ message: "Failed to generate PDF report" });
+    }
+  });
+
+  app.get("/api/reports/export/excel", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Check if filters are provided
+      const { search, clientId, type, status, expiryFrom, expiryTo } = req.query;
+      
+      let certificates;
+      if (search || clientId || type || status || expiryFrom || expiryTo) {
+        const filters = {
+          search: search as string,
+          clientId: clientId as string,
+          type: type ? (Array.isArray(type) ? type as string[] : [type as string]) : undefined,
+          status: status ? (Array.isArray(status) ? status as string[] : [status as string]) : undefined,
+          expiryFrom: expiryFrom as string,
+          expiryTo: expiryTo as string,
+          userId,
+          userRole: user?.role,
+        };
+        certificates = await storage.filterCertificates(filters);
+      } else {
+        certificates = await storage.getAllCertificates(userId, user?.role);
+      }
+      
+      const excelBuffer = generateExcelReport(certificates);
+
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="relatorio-certidoes-${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.send(excelBuffer);
+    } catch (error) {
+      console.error("Error generating Excel report:", error);
+      res.status(500).json({ message: "Failed to generate Excel report" });
     }
   });
 

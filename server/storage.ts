@@ -19,7 +19,7 @@ import {
   type ClientWithCreator,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, or, like, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -41,6 +41,24 @@ export interface IStorage {
   createCertificate(certificate: InsertCertificate): Promise<Certificate>;
   updateCertificate(id: string, certificate: Partial<InsertCertificate>): Promise<Certificate | undefined>;
   deleteCertificate(id: string): Promise<void>;
+  filterCertificates(filters: {
+    search?: string;
+    clientId?: string;
+    type?: string[];
+    status?: string[];
+    expiryFrom?: string;
+    expiryTo?: string;
+    userId?: string;
+    userRole?: string;
+  }): Promise<CertificateWithRelations[]>;
+  getCertificateStatistics(userId?: string, userRole?: string): Promise<{
+    total: number;
+    active: number;
+    expiringSoon: number;
+    expired: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+  }>;
 
   // Notification operations
   getAllNotifications(userId: string): Promise<NotificationWithRelations[]>;
@@ -197,6 +215,117 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCertificate(id: string): Promise<void> {
     await db.delete(certificates).where(eq(certificates.id, id));
+  }
+
+  async filterCertificates(filters: {
+    search?: string;
+    clientId?: string;
+    type?: string[];
+    status?: string[];
+    expiryFrom?: string;
+    expiryTo?: string;
+    userId?: string;
+    userRole?: string;
+  }): Promise<CertificateWithRelations[]> {
+    const conditions = [];
+
+    // Permission check: non-admin users only see their certificates
+    if (filters.userId && filters.userRole !== "admin") {
+      conditions.push(eq(certificates.createdBy, filters.userId));
+    }
+
+    // Search by client name or certificate type
+    if (filters.search) {
+      conditions.push(
+        or(
+          like(clients.name, `%${filters.search}%`),
+          like(certificates.type, `%${filters.search}%`)
+        )
+      );
+    }
+
+    // Filter by client
+    if (filters.clientId) {
+      conditions.push(eq(certificates.clientId, filters.clientId));
+    }
+
+    // Filter by type
+    if (filters.type && filters.type.length > 0) {
+      conditions.push(inArray(certificates.type, filters.type));
+    }
+
+    // Filter by status
+    if (filters.status && filters.status.length > 0) {
+      conditions.push(inArray(certificates.status, filters.status));
+    }
+
+    // Filter by expiry date range
+    if (filters.expiryFrom) {
+      conditions.push(gte(certificates.expiryDate, filters.expiryFrom));
+    }
+    if (filters.expiryTo) {
+      conditions.push(lte(certificates.expiryDate, filters.expiryTo));
+    }
+
+    let query = db
+      .select()
+      .from(certificates)
+      .leftJoin(clients, eq(certificates.clientId, clients.id))
+      .leftJoin(users, eq(certificates.createdBy, users.id))
+      .orderBy(desc(certificates.createdAt));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    const results = await query;
+    return results.map((row) => ({
+      ...row.certificates,
+      client: row.clients!,
+      creator: row.users!,
+    }));
+  }
+
+  async getCertificateStatistics(userId?: string, userRole?: string): Promise<{
+    total: number;
+    active: number;
+    expiringSoon: number;
+    expired: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+  }> {
+    // Get only certificates the user is authorized to see
+    let query = db.select().from(certificates);
+    
+    if (userId && userRole !== "admin") {
+      query = query.where(eq(certificates.createdBy, userId)) as any;
+    }
+    
+    const allCerts = await query;
+
+    const stats = {
+      total: allCerts.length,
+      active: 0,
+      expiringSoon: 0,
+      expired: 0,
+      byType: {} as Record<string, number>,
+      byStatus: {} as Record<string, number>,
+    };
+
+    allCerts.forEach((cert) => {
+      // Count by status
+      if (cert.status === "active") stats.active++;
+      if (cert.status === "expiring_soon") stats.expiringSoon++;
+      if (cert.status === "expired") stats.expired++;
+
+      // Count by type
+      stats.byType[cert.type] = (stats.byType[cert.type] || 0) + 1;
+
+      // Count by status
+      stats.byStatus[cert.status] = (stats.byStatus[cert.status] || 0) + 1;
+    });
+
+    return stats;
   }
 
   // Notification operations

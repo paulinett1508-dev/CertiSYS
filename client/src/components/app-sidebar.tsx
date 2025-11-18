@@ -1,4 +1,4 @@
-import { Home, FileText, Bell, Users, LogOut, Building2 } from "lucide-react";
+import { Home, FileText, Bell, Users, LogOut, Building2, BarChart3 } from "lucide-react";
 import { useLocation } from "wouter";
 import {
   Sidebar,
@@ -35,6 +35,11 @@ export function AppSidebar() {
       title: "Clientes",
       url: "/clients",
       icon: Building2,
+    },
+    {
+      title: "Relatórios",
+      url: "/reports",
+      icon: BarChart3,
     },
     {
       title: "Notificações",
