@@ -28,6 +28,16 @@ export const sessions = pgTable(
 export const userRoleEnum = pgEnum("user_role", ["admin", "accountant", "viewer"]);
 export const certificateStatusEnum = pgEnum("certificate_status", ["valid", "expiring_soon", "expired"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["expiring_soon", "expired", "renewed"]);
+export const auditActionEnum = pgEnum("audit_action", [
+  "user_created",
+  "user_role_changed",
+  "client_created",
+  "client_updated",
+  "client_deleted",
+  "certificate_created",
+  "certificate_updated",
+  "certificate_deleted",
+]);
 
 // Users table (required for Replit Auth)
 export const users = pgTable("users", {
@@ -117,6 +127,25 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+// Audit logs table
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  action: auditActionEnum("action").notNull(),
+  entityType: varchar("entity_type", { length: 50 }).notNull(), // "user", "client", "certificate"
+  entityId: varchar("entity_id"),
+  details: jsonb("details"), // JSON object with additional information
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [auditLogs.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -142,6 +171,11 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Update schemas
 export const updateUserSchema = insertUserSchema.partial();
 export const updateClientSchema = insertClientSchema.partial();
@@ -160,6 +194,9 @@ export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 
 // Extended types with relations
 export type CertificateWithRelations = Certificate & {

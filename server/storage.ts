@@ -3,6 +3,7 @@ import {
   clients,
   certificates,
   notifications,
+  auditLogs,
   type User,
   type UpsertUser,
   type Client,
@@ -11,6 +12,8 @@ import {
   type InsertCertificate,
   type Notification,
   type InsertNotification,
+  type AuditLog,
+  type InsertAuditLog,
   type CertificateWithRelations,
   type NotificationWithRelations,
   type ClientWithCreator,
@@ -46,6 +49,10 @@ export interface IStorage {
   markNotificationAsRead(id: string): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
   hasUnreadNotificationForCertificate(certificateId: string, userId: string, type: string): Promise<boolean>;
+
+  // Audit log operations
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(limit?: number): Promise<AuditLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -256,6 +263,22 @@ export class DatabaseStorage implements IStorage {
       )
       .limit(1);
     return !!existing;
+  }
+
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const [auditLog] = await db
+      .insert(auditLogs)
+      .values(log)
+      .returning();
+    return auditLog;
+  }
+
+  async getAuditLogs(limit: number = 100): Promise<AuditLog[]> {
+    return await db
+      .select()
+      .from(auditLogs)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit);
   }
 }
 

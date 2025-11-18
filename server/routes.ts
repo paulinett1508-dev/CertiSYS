@@ -8,6 +8,7 @@ import {
 } from "./objectStorage";
 import { insertClientSchema, insertCertificateSchema, insertNotificationSchema } from "@shared/schema";
 import { getCertificateStatus } from "@shared/utils";
+import { createAuditLog } from "./audit";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -57,7 +58,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid role" });
       }
 
+      const targetUser = await storage.getUser(req.params.id);
+      const oldRole = targetUser?.role;
+
       const updatedUser = await storage.updateUserRole(req.params.id, role);
+      
+      await createAuditLog(req, "user_role_changed", "user", req.params.id, {
+        oldRole,
+        newRole: role,
+        targetUserEmail: targetUser?.email,
+      });
+
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user role:", error);
@@ -120,6 +131,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const client = await storage.createClient(validatedData);
+      
+      await createAuditLog(req, "client_created", "client", client.id, {
+        clientName: client.name,
+        document: client.document,
+      });
+
       res.status(201).json(client);
     } catch (error: any) {
       console.error("Error creating client:", error);
@@ -151,6 +168,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedClient = await storage.updateClient(req.params.id, req.body);
+      
+      await createAuditLog(req, "client_updated", "client", req.params.id, {
+        clientName: updatedClient?.name,
+        updatedFields: Object.keys(req.body),
+      });
+
       res.json(updatedClient);
     } catch (error) {
       console.error("Error updating client:", error);
@@ -172,6 +195,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user?.role !== "admin" && client.createdBy !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
+
+      await createAuditLog(req, "client_deleted", "client", req.params.id, {
+        clientName: client.name,
+        document: client.document,
+      });
 
       await storage.deleteClient(req.params.id);
       res.status(204).send();
@@ -236,6 +264,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const certificate = await storage.createCertificate(validatedData);
+      
+      await createAuditLog(req, "certificate_created", "certificate", certificate.id, {
+        type: certificate.type,
+        clientId: certificate.clientId,
+        expiryDate: certificate.expiryDate,
+      });
+
       res.status(201).json(certificate);
     } catch (error: any) {
       console.error("Error creating certificate:", error);
@@ -271,6 +306,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedCertificate = await storage.updateCertificate(req.params.id, updateData);
+      
+      await createAuditLog(req, "certificate_updated", "certificate", req.params.id, {
+        type: updatedCertificate?.type,
+        updatedFields: Object.keys(req.body),
+      });
+
       res.json(updatedCertificate);
     } catch (error) {
       console.error("Error updating certificate:", error);
@@ -291,6 +332,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user?.role !== "admin" && certificate.createdBy !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
+
+      await createAuditLog(req, "certificate_deleted", "certificate", req.params.id, {
+        type: certificate.type,
+        clientId: certificate.clientId,
+      });
 
       await storage.deleteCertificate(req.params.id);
       res.status(204).send();
