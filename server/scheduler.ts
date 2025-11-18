@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import { getCertificateStatus } from "@shared/utils";
+import { emailService } from "./email";
 
 export class NotificationScheduler {
   private intervalId: NodeJS.Timeout | null = null;
@@ -69,6 +70,27 @@ export class NotificationScheduler {
             });
 
             console.log(`[scheduler] Created ${notificationType} notification for certificate ${cert.id}`);
+
+            const user = await storage.getUser(certOwner);
+            if (user?.email) {
+              if (status === "expiring_soon") {
+                await emailService.sendCertificateExpiringNotification(
+                  user.email,
+                  cert.client.name,
+                  cert.type,
+                  cert.expiryDate
+                );
+              } else {
+                await emailService.sendCertificateExpiredNotification(
+                  user.email,
+                  cert.client.name,
+                  cert.type,
+                  cert.expiryDate
+                );
+              }
+            } else {
+              console.warn(`[scheduler] User ${certOwner} has no email, skipping email notification`);
+            }
           }
         }
       }
