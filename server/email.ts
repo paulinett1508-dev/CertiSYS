@@ -48,10 +48,12 @@ class EmailService {
     certificateType: string,
     expiryDate: string
   ): Promise<boolean> {
-    const subject = `⚠️ Certidão próxima do vencimento - ${clientName}`;
+    const subject = `Alerta: Certidão próxima do vencimento - ${clientName}`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #f59e0b;">⚠️ Atenção: Certidão próxima do vencimento</h2>
+        <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 20px;">
+          <h2 style="color: #92400e; margin: 0;">Atenção: Certidão próxima do vencimento</h2>
+        </div>
         <p>Olá,</p>
         <p>A certidão <strong>${certificateType}</strong> do cliente <strong>${clientName}</strong> está próxima do vencimento.</p>
         <p><strong>Data de vencimento:</strong> ${expiryDate}</p>
@@ -76,10 +78,12 @@ class EmailService {
     certificateType: string,
     expiryDate: string
   ): Promise<boolean> {
-    const subject = `🚨 Certidão vencida - ${clientName}`;
+    const subject = `Urgente: Certidão vencida - ${clientName}`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #ef4444;">🚨 Atenção: Certidão vencida</h2>
+        <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 20px;">
+          <h2 style="color: #991b1b; margin: 0;">Atenção: Certidão vencida</h2>
+        </div>
         <p>Olá,</p>
         <p>A certidão <strong>${certificateType}</strong> do cliente <strong>${clientName}</strong> está <strong>vencida</strong>.</p>
         <p><strong>Data de vencimento:</strong> ${expiryDate}</p>
