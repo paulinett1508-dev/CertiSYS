@@ -45,6 +45,7 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: string): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
+  hasUnreadNotificationForCertificate(certificateId: string, userId: string, type: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -235,6 +236,26 @@ export class DatabaseStorage implements IStorage {
       .update(notifications)
       .set({ isRead: "true" })
       .where(eq(notifications.userId, userId));
+  }
+
+  async hasUnreadNotificationForCertificate(
+    certificateId: string,
+    userId: string,
+    type: string
+  ): Promise<boolean> {
+    const [existing] = await db
+      .select()
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.certificateId, certificateId),
+          eq(notifications.userId, userId),
+          eq(notifications.type, type),
+          eq(notifications.isRead, "false")
+        )
+      )
+      .limit(1);
+    return !!existing;
   }
 }
 

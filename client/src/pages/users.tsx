@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -10,10 +10,13 @@ import { UserPlus, Shield, Eye, BookUser } from "lucide-react";
 import { formatDateTime } from "@/lib/dateUtils";
 import type { User } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EditUserRoleDialog } from "@/components/edit-user-role-dialog";
 
 export default function Users() {
   const { user, isLoading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -94,13 +97,14 @@ export default function Users() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-semibold" data-testid="text-users-title">
-          Gerenciamento de Usuários
-        </h1>
-        <Button disabled data-testid="button-new-user">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Novo Usuário
-        </Button>
+        <div>
+          <h1 className="text-3xl font-semibold" data-testid="text-users-title">
+            Gerenciamento de Usuários
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerencie perfis e permissões dos usuários do sistema
+          </p>
+        </div>
       </div>
 
       <Card>
@@ -155,8 +159,16 @@ export default function Users() {
                       {roleConfig.label}
                     </Badge>
 
-                    <Button variant="ghost" size="sm" disabled>
-                      Editar
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingUser(u);
+                        setDialogOpen(true);
+                      }}
+                      data-testid={`button-edit-user-${u.id}`}
+                    >
+                      Editar Perfil
                     </Button>
                   </div>
                 );
@@ -202,6 +214,12 @@ export default function Users() {
           </div>
         </CardContent>
       </Card>
+
+      <EditUserRoleDialog
+        user={editingUser}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   );
 }
