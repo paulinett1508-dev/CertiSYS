@@ -13,12 +13,12 @@ export default function Landing() {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-8">
             <img 
-              src="/logo-fundobranco.png" 
+              src="/logo-light.png" 
               alt="CertiSYS" 
               className="h-44 md:h-52 dark:hidden"
             />
             <img 
-              src="/logo-fundopreto.png" 
+              src="/logo-dark.png" 
               alt="CertiSYS" 
               className="h-44 md:h-52 hidden dark:block"
             />

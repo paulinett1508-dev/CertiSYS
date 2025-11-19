@@ -81,12 +81,12 @@ export function AppSidebar() {
               <SidebarMenuButton size="lg" asChild>
                 <a href="/" className="flex items-center justify-center py-5">
                   <img
-                    src="/logo-fundobranco.png"
+                    src="/logo-light.png"
                     alt="CertiSYS"
                     className="h-12 dark:hidden"
                   />
                   <img
-                    src="/logo-fundopreto.png"
+                    src="/logo-dark.png"
                     alt="CertiSYS"
                     className="h-12 hidden dark:block"
                   />
