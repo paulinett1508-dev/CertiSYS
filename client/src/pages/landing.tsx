@@ -1,22 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Bell, Shield, TrendingUp } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className="container mx-auto px-6 py-12">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-8">
             <img 
               src="/logo-fundobranco.png" 
               alt="CertiSYS" 
-              className="h-32 md:h-40 dark:hidden"
+              className="h-44 md:h-52 dark:hidden"
             />
             <img 
               src="/logo-fundopreto.png" 
               alt="CertiSYS" 
-              className="h-32 md:h-40 hidden dark:block"
+              className="h-44 md:h-52 hidden dark:block"
             />
           </div>
           <h1 className="text-4xl font-bold mb-4" data-testid="text-landing-title">
@@ -103,11 +107,11 @@ export default function Landing() {
         </div>
 
         <div className="mt-16 flex justify-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#0F2A3D] bg-white dark:border-[#2F9556] dark:bg-[#0F2A3D]/20">
-            <img src="/selo.png" alt="CertiSYS" className="h-6 w-6" />
+          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-[#0F2A3D] bg-white dark:border-[#2F9556] dark:bg-[#0F2A3D]/20">
+            <img src="/selo.png" alt="CertiSYS" className="h-8 w-8" />
             <div className="flex flex-col leading-tight">
-              <span className="text-[9px] tracking-wider uppercase text-[#7C8A96] dark:text-[#2F9556]">POWERED BY</span>
-              <span className="text-[13px] font-semibold text-[#0F2A3D] dark:text-white">CertiSYS</span>
+              <span className="text-[10px] tracking-wider uppercase text-[#7C8A96] dark:text-[#2F9556]">POWERED BY</span>
+              <span className="text-[14px] font-semibold text-[#0F2A3D] dark:text-white">CertiSYS</span>
             </div>
           </div>
         </div>
