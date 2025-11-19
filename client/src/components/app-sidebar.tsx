@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarHeader, // Import SidebarHeader
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,6 +74,27 @@ export function AppSidebar() {
   return (
     <Sidebar data-testid="sidebar-main">
       <SidebarContent>
+        {/* Updated SidebarHeader to include logos */}
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild>
+                <a href="/" className="flex items-center gap-3">
+                  <img
+                    src="/logo-fundobranco.png"
+                    alt="CertiSYS"
+                    className="h-8 dark:hidden"
+                  />
+                  <img
+                    src="/logo-fundopreto.png"
+                    alt="CertiSYS"
+                    className="h-8 hidden dark:block"
+                  />
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
         <SidebarGroup>
           <SidebarGroupLabel className="text-lg font-semibold px-2 py-4">
             Certidões Negativas
@@ -97,7 +119,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
+
       {user && (
         <SidebarFooter className="p-4 border-t">
           <div className="flex items-center gap-3 mb-3">
@@ -128,6 +150,10 @@ export function AppSidebar() {
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>
+          {/* Added seal to the footer */}
+          <div className="flex justify-center items-center mt-4">
+            <img src="/selo.png" alt="Powered by CertiSYS" className="h-6" />
+          </div>
         </SidebarFooter>
       )}
     </Sidebar>

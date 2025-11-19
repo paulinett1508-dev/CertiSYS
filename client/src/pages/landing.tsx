@@ -7,6 +7,18 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-12">
         <div className="text-center mb-16">
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/logo-fundobranco.png" 
+              alt="CertiSYS" 
+              className="h-16 dark:hidden"
+            />
+            <img 
+              src="/logo-fundopreto.png" 
+              alt="CertiSYS" 
+              className="h-16 hidden dark:block"
+            />
+          </div>
           <h1 className="text-4xl font-bold mb-4" data-testid="text-landing-title">
             Sistema de Gestão de Certidões Negativas
           </h1>
@@ -88,6 +100,16 @@ export default function Landing() {
               <span>Interface responsiva e moderna para desktop e mobile</span>
             </li>
           </ul>
+        </div>
+
+        <div className="mt-16 flex justify-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#0F2A3D] bg-white dark:bg-background">
+            <img src="/selo.png" alt="CertiSYS" className="h-5 w-5" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-[9px] tracking-wider uppercase text-[#7C8A96]">POWERED BY</span>
+              <span className="text-[13px] font-semibold text-[#0F2A3D] dark:text-white">CertiSYS</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
