@@ -11,12 +11,12 @@ export default function Landing() {
             <img 
               src="/logo-fundobranco.png" 
               alt="CertiSYS" 
-              className="h-16 dark:hidden"
+              className="h-32 md:h-40 dark:hidden"
             />
             <img 
               src="/logo-fundopreto.png" 
               alt="CertiSYS" 
-              className="h-16 hidden dark:block"
+              className="h-32 md:h-40 hidden dark:block"
             />
           </div>
           <h1 className="text-4xl font-bold mb-4" data-testid="text-landing-title">
@@ -103,10 +103,10 @@ export default function Landing() {
         </div>
 
         <div className="mt-16 flex justify-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#0F2A3D] bg-white dark:bg-background">
-            <img src="/selo.png" alt="CertiSYS" className="h-5 w-5" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#0F2A3D] bg-white dark:border-[#2F9556] dark:bg-[#0F2A3D]/20">
+            <img src="/selo.png" alt="CertiSYS" className="h-6 w-6" />
             <div className="flex flex-col leading-tight">
-              <span className="text-[9px] tracking-wider uppercase text-[#7C8A96]">POWERED BY</span>
+              <span className="text-[9px] tracking-wider uppercase text-[#7C8A96] dark:text-[#2F9556]">POWERED BY</span>
               <span className="text-[13px] font-semibold text-[#0F2A3D] dark:text-white">CertiSYS</span>
             </div>
           </div>

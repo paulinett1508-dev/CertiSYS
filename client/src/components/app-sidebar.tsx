@@ -79,16 +79,16 @@ export function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild>
-                <a href="/" className="flex items-center gap-3">
+                <a href="/" className="flex items-center justify-center py-4">
                   <img
                     src="/logo-fundobranco.png"
                     alt="CertiSYS"
-                    className="h-8 dark:hidden"
+                    className="h-10 dark:hidden"
                   />
                   <img
                     src="/logo-fundopreto.png"
                     alt="CertiSYS"
-                    className="h-8 hidden dark:block"
+                    className="h-10 hidden dark:block"
                   />
                 </a>
               </SidebarMenuButton>
@@ -151,8 +151,8 @@ export function AppSidebar() {
             Sair
           </Button>
           {/* Added seal to the footer */}
-          <div className="flex justify-center items-center mt-4">
-            <img src="/selo.png" alt="Powered by CertiSYS" className="h-6" />
+          <div className="flex justify-center items-center mt-4 pt-3 border-t">
+            <img src="/selo.png" alt="Powered by CertiSYS" className="h-8 opacity-70 dark:opacity-90" />
           </div>
         </SidebarFooter>
       )}
