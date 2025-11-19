@@ -1,0 +1,145 @@
+1. Paleta de cores e variações
+Paleta principal (já usada no logo)
+
+Azul Governo / Tecnologia (primário)
+#0F2A3D
+Uso: texto “CertiSYS”, contornos, documento.
+
+Verde Confiança / Validação
+#2F9556
+Uso: escudo e check de aprovação.
+
+Branco
+#FFFFFF
+Uso: fundo principal ou elementos internos (check, áreas negativas).
+
+Versão para fundo escuro
+
+Quando o fundo for escuro (azul bem escuro ou preto):
+
+Texto “CertiSYS”: branco #FFFFFF
+
+Documento: contorno branco, interior bem escuro #0A1721
+
+Escudo: mantém o verde #2F9556
+
+Check: branco #FFFFFF
+
+Ideia:
+
+Fica legível em dashboards escuros, footers, login de sistema etc.
+
+Versão monocromática (P&B)
+
+Pra impressão, contratos ou locais com limitação de cor:
+
+Positivo (para fundo claro):
+Tudo em preto #000000 (documento, escudo, check, texto).
+
+Negativo (para fundo escuro):
+Tudo em branco #FFFFFF.
+
+Mantém a forma do documento + escudo + check, sem verde/azul.
+
+2. Selo “Powered by CertiSYS”
+Conceito visual
+
+Formato retangular com cantos levemente arredondados:
+
+Fundo branco (ou semitransparente se for sobre imagem).
+
+Borda 1px no azul principal #0F2A3D.
+
+À esquerda: o ícone do CertiSYS (documento + escudo).
+
+À direita: o texto:
+
+Linha 1 (menor, cinza): POWERED BY
+Linha 2 (maior, azul): CertiSYS
+
+Visualmente, algo assim:
+
+[ ÍCONE ]  POWERED BY
+          CertiSYS
+
+Sugestão de HTML/CSS (pra colocar em sistemas / sites)
+<div class="powered-by-certisys">
+  <img src="icon-certisys.png" alt="CertiSYS" class="pbs-icon" />
+  <div class="pbs-text">
+    <span class="pbs-label">POWERED BY</span>
+    <span class="pbs-brand">CertiSYS</span>
+  </div>
+</div>
+
+.powered-by-certisys {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #0F2A3D;
+  background: #FFFFFF;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.pbs-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.pbs-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.pbs-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7C8A96;
+}
+
+.pbs-brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F2A3D;
+}
+
+
+Basta trocar icon-certisys.png pelo arquivo do ícone.
+
+3. Ícone / favicon do sistema
+Desenho do ícone
+
+Use somente o símbolo (sem o texto “CertiSYS”):
+
+Fundo quadrado com cantos levemente arredondados:
+
+Azul principal #0F2A3D.
+
+Escudo central em verde #2F9556.
+
+Check interno em branco #FFFFFF.
+
+Isso funciona bem tanto pra:
+
+Favicon de site.
+
+Ícone de app (PWA ou atalho na área de trabalho).
+
+Tamanhos recomendados
+
+Exportar o ícone em 512x512 e gerar os demais tamanhos a partir dele:
+
+16x16, 32x32, 48x48 – favicon clássico.
+
+180x180 – ícone para iOS (apple-touch-icon).
+
+192x192, 256x256, 512x512 – PWA / Android / desktop.
+
+Exemplo de uso no HTML
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
