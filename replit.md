@@ -106,9 +106,30 @@ Sistema web profissional para gestão e monitoramento de certidões negativas co
 - **Usuários** (`/users`): Gerenciamento (admin only)
 - **Configurações** (futuro): Preferências do usuário
 
-## Próximas Fases
-- Notificações por email automáticas
-- Relatórios exportáveis (PDF/Excel)
+## Funcionalidades Implementadas
+
+### ✅ Concluído
+- Sistema completo de autenticação e controle de acesso
+- Dashboard com estatísticas em tempo real
+- CRUD completo de certidões e clientes
+- Upload seguro de PDFs (Object Storage)
+- Sistema de notificações automáticas in-app
+- Notificações automáticas por email (SendGrid)
+- Logs de auditoria para ações administrativas
+- Relatórios exportáveis (PDF/Excel) com filtros
+- Filtros avançados com multi-select (tipos e status)
+- Controle de permissões em todos os endpoints
+- Interface responsiva e moderna (Shadcn UI)
+
+### Características Técnicas
+- Estatísticas calculadas dinamicamente do dataset filtrado
+- Exportações respeitam filtros aplicados e permissões de usuário
+- Scheduler para geração automática de notificações
+- Emails HTML profissionais sem emojis
+- Auditoria completa de ações administrativas
+
+## Próximas Melhorias (Opcional)
 - Autenticação multifator (MFA)
-- Logs de auditoria completos
-- Filtros avançados com múltiplos critérios
+- Filtros por range de datas mais avançados
+- Dashboards personalizáveis por usuário
+- Webhooks para integrações externas

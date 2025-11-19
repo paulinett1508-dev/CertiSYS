@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import type { CertificateWithRelations } from "@shared/schema";
@@ -6,7 +6,7 @@ import type { CertificateWithRelations } from "@shared/schema";
 function calculateStatistics(certificates: CertificateWithRelations[]) {
   const stats = {
     total: certificates.length,
-    active: 0,
+    valid: 0,
     expiringSoon: 0,
     expired: 0,
     byType: {} as Record<string, number>,
@@ -14,7 +14,7 @@ function calculateStatistics(certificates: CertificateWithRelations[]) {
   };
 
   certificates.forEach((cert) => {
-    if (cert.status === "active") stats.active++;
+    if (cert.status === "valid") stats.valid++;
     if (cert.status === "expiring_soon") stats.expiringSoon++;
     if (cert.status === "expired") stats.expired++;
 
@@ -38,7 +38,7 @@ export function generatePDFReport(
   // Statistics
   doc.setFontSize(12);
   doc.text(`Total de Certidões: ${statistics.total}`, 14, 35);
-  doc.text(`Ativas: ${statistics.active}`, 14, 42);
+  doc.text(`Válidas: ${statistics.valid}`, 14, 42);
   doc.text(`Vencendo em breve: ${statistics.expiringSoon}`, 14, 49);
   doc.text(`Vencidas: ${statistics.expired}`, 14, 56);
 
@@ -46,7 +46,7 @@ export function generatePDFReport(
   const tableData = certificates.map((cert) => [
     cert.client?.name || "N/A",
     cert.type,
-    cert.status === "active" ? "Ativa" : cert.status === "expiring_soon" ? "Vencendo" : "Vencida",
+    cert.status === "valid" ? "Válida" : cert.status === "expiring_soon" ? "Vencendo" : "Vencida",
     new Date(cert.expiryDate).toLocaleDateString("pt-BR"),
     cert.issueDate ? new Date(cert.issueDate).toLocaleDateString("pt-BR") : "N/A",
   ]);
@@ -72,7 +72,7 @@ export function generateExcelReport(
   const statsData = [
     ["Estatísticas Gerais"],
     ["Total de Certidões", statistics.total],
-    ["Ativas", statistics.active],
+    ["Válidas", statistics.valid],
     ["Vencendo em breve", statistics.expiringSoon],
     ["Vencidas", statistics.expired],
     [],
@@ -81,7 +81,7 @@ export function generateExcelReport(
     [],
     ["Por Status"],
     ...Object.entries(statistics.byStatus).map(([status, count]) => [
-      status === "active" ? "Ativa" : status === "expiring_soon" ? "Vencendo" : "Vencida",
+      status === "valid" ? "Válida" : status === "expiring_soon" ? "Vencendo" : "Vencida",
       count,
     ]),
   ];
@@ -94,7 +94,7 @@ export function generateExcelReport(
     ...certificates.map((cert) => [
       cert.client?.name || "N/A",
       cert.type,
-      cert.status === "active" ? "Ativa" : cert.status === "expiring_soon" ? "Vencendo" : "Vencida",
+      cert.status === "valid" ? "Válida" : cert.status === "expiring_soon" ? "Vencendo" : "Vencida",
       new Date(cert.expiryDate).toLocaleDateString("pt-BR"),
       cert.issueDate ? new Date(cert.issueDate).toLocaleDateString("pt-BR") : "N/A",
       cert.number || "N/A",

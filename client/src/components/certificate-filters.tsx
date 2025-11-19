@@ -35,7 +35,7 @@ const certificateTypes = [
 ];
 
 const certificateStatuses = [
-  { value: "active", label: "Ativa" },
+  { value: "valid", label: "Válida" },
   { value: "expiring_soon", label: "Vencendo em breve" },
   { value: "expired", label: "Vencida" },
 ];
@@ -67,7 +67,7 @@ export function CertificateFilters({ onFilter, clients }: CertificateFiltersProp
   const handleApplyFilters = () => {
     onFilter({
       search: search || undefined,
-      clientId: clientId || undefined,
+      clientId: clientId && clientId !== "all" ? clientId : undefined,
       type: selectedTypes.length > 0 ? selectedTypes : undefined,
       status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
       expiryFrom: expiryFrom || undefined,
@@ -113,7 +113,7 @@ export function CertificateFilters({ onFilter, clients }: CertificateFiltersProp
                 <SelectValue placeholder="Todos os clientes" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os clientes</SelectItem>
+                <SelectItem value="all">Todos os clientes</SelectItem>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
